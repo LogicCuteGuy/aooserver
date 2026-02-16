@@ -16,25 +16,32 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # JUCE Library Code sources
-set(JUCE_SOURCES
-    JuceLibraryCode/include_juce_core.cpp
-    JuceLibraryCode/include_juce_audio_basics.cpp
-    JuceLibraryCode/include_juce_audio_formats.cpp
-    JuceLibraryCode/include_juce_cryptography.cpp
-    JuceLibraryCode/include_juce_data_structures.cpp
-    JuceLibraryCode/include_juce_events.cpp
-)
-
 if(WIN32)
-    # Windows doesn't need .mm files
+    set(JUCE_SOURCES
+        JuceLibraryCode/include_juce_core.cpp
+        JuceLibraryCode/include_juce_audio_basics.cpp
+        JuceLibraryCode/include_juce_audio_formats.cpp
+        JuceLibraryCode/include_juce_cryptography.cpp
+        JuceLibraryCode/include_juce_data_structures.cpp
+        JuceLibraryCode/include_juce_events.cpp
+    )
 elseif(APPLE)
-    list(APPEND JUCE_SOURCES
+    set(JUCE_SOURCES
         JuceLibraryCode/include_juce_core.mm
         JuceLibraryCode/include_juce_audio_basics.mm
         JuceLibraryCode/include_juce_audio_formats.mm
         JuceLibraryCode/include_juce_cryptography.mm
         JuceLibraryCode/include_juce_data_structures.mm
         JuceLibraryCode/include_juce_events.mm
+    )
+else()
+    set(JUCE_SOURCES
+        JuceLibraryCode/include_juce_core.cpp
+        JuceLibraryCode/include_juce_audio_basics.cpp
+        JuceLibraryCode/include_juce_audio_formats.cpp
+        JuceLibraryCode/include_juce_cryptography.cpp
+        JuceLibraryCode/include_juce_data_structures.cpp
+        JuceLibraryCode/include_juce_events.cpp
     )
 endif()
 
@@ -148,6 +155,11 @@ elseif(APPLE)
         "-framework CoreFoundation"
         "-framework CoreAudio"
         "-framework CoreMIDI"
+        "-framework AudioToolbox"
+        "-framework Accelerate"
+        "-framework Cocoa"
+        "-framework IOKit"
+        "-framework Security"
     )
 else()
     target_link_libraries(aooserver PRIVATE pthread)

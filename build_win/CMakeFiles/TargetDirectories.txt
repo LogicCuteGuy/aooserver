@@ -1,3 +1,0 @@
-C:/Users/LogicCuteGuy/Downloads/aooserver/build_win/CMakeFiles/aooserver.dir
-C:/Users/LogicCuteGuy/Downloads/aooserver/build_win/CMakeFiles/edit_cache.dir
-C:/Users/LogicCuteGuy/Downloads/aooserver/build_win/CMakeFiles/rebuild_cache.dir
