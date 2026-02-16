@@ -5,6 +5,8 @@ main website at https://sonobus.net .
 
 # BUILD
 
+## Linux
+
 To build it on Linux:
 
     cd Builds/LinuxMakefile
@@ -13,6 +15,30 @@ To build it on Linux:
 And the resulting binary will be in Builds/LinuxMakefile/build/aooserver,
 which you can copy to a system binary location of your choice
 (/usr/local/bin, for example).
+
+## Windows
+
+To build on Windows, see [Builds/Windows/README.md](Builds/Windows/README.md) for detailed instructions.
+
+**Quick start:**
+
+Prerequisites:
+- CMake 3.16+
+- GCC/MinGW or Clang
+
+Build commands:
+```cmd
+cd Builds\Windows
+.\build.ps1
+```
+
+Or with batch file:
+```cmd
+cd Builds\Windows
+build.bat
+```
+
+The resulting binary will be in `Builds\Windows\build\bin\aooserver.exe`
 
 # USAGE
 

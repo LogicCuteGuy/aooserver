@@ -11,10 +11,20 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 
 #include "aoo/aoo_net.hpp"
-#include <unistd.h>
 
 #include <iostream>
 #include <signal.h>
+#include <chrono>
+#include <thread>
+
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #include <winsock2.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <unistd.h>
+#endif
 
 using namespace std;
 
@@ -333,6 +343,7 @@ void AooServerThread::run()  {
 static bool keyboardBreakOccurred = false;
 
 //==============================================================================
+#ifndef _WIN32
 static void keyboardBreakSignalHandler (int sig)
 {
     if (sig == SIGINT) {
@@ -340,17 +351,39 @@ static void keyboardBreakSignalHandler (int sig)
         DBG("KEYBOARD BREAK!");
     }
 }
+#endif
 
 static void installKeyboardBreakHandler()
 {
-    struct sigaction saction;
-    sigset_t maskSet;
-    sigemptyset (&maskSet);
-    saction.sa_handler = keyboardBreakSignalHandler;
-    saction.sa_mask = maskSet;
-    saction.sa_flags = 0;
-    sigaction (SIGINT, &saction, 0);
+    #ifdef _WIN32
+        // On Windows, use SetConsoleCtrlHandler instead of signal handling
+        auto consoleHandler = [](DWORD dwCtrlType) -> BOOL {
+            if (dwCtrlType == CTRL_C_EVENT || dwCtrlType == CTRL_BREAK_EVENT) {
+                keyboardBreakOccurred = true;
+                return TRUE;
+            }
+            return FALSE;
+        };
+        SetConsoleCtrlHandler((PHANDLER_ROUTINE)consoleHandler, TRUE);
+    #else
+        struct sigaction saction;
+        sigset_t maskSet;
+        sigemptyset (&maskSet);
+        saction.sa_handler = keyboardBreakSignalHandler;
+        saction.sa_mask = maskSet;
+        saction.sa_flags = 0;
+        sigaction (SIGINT, &saction, 0);
+    #endif
 }
+
+//==============================================================================
+// Helper function to handle platform-specific sleep (may be used in future)
+#ifdef _WIN32
+static inline void crossPlatformSleep(unsigned int microseconds)
+{
+    Sleep(microseconds / 1000);
+}
+#endif
 
 #if 1
 class AooServerApplication : public JUCEApplicationBase, public Timer
@@ -362,6 +395,17 @@ public:
     void initialise (const String& /*commandLineParameters*/) override
     {
         // Start your app here
+        #ifdef _WIN32
+        // Initialize Winsock on Windows
+        WSADATA wsaData;
+        int wsaErr = WSAStartup(MAKEWORD(2, 2), &wsaData);
+        if (wsaErr != 0) {
+            cerr << "WSAStartup failed with error: " << wsaErr << endl;
+            quit();
+            return;
+        }
+        #endif
+
         installKeyboardBreakHandler();
         
         
@@ -442,7 +486,11 @@ public:
         }
     }
     
-    void shutdown() override {}
+    void shutdown() override {
+        #ifdef _WIN32
+        WSACleanup();
+        #endif
+    }
 
     void anotherInstanceStarted (const String& commandLine) override {
         
@@ -491,6 +539,16 @@ START_JUCE_APPLICATION (AooServerApplication)
 //==============================================================================
 int main (int argc, char* argv[])
 {
+    #ifdef _WIN32
+    // Initialize Winsock on Windows
+    WSADATA wsaData;
+    int wsaErr = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (wsaErr != 0) {
+        cerr << "WSAStartup failed with error: " << wsaErr << endl;
+        return 1;
+    }
+    #endif
+
     installKeyboardBreakHandler();
 
     AooServer server;
@@ -500,16 +558,23 @@ int main (int argc, char* argv[])
         cerr << "AOO Server started on port " <<  server.getPort() << endl;
     }
     else {
+        #ifdef _WIN32
+        WSACleanup();
+        #endif
         exit(1);
     }
 
     
     while (!keyboardBreakOccurred) {
      
-        usleep(20000);
+        crossPlatformSleep(20000);
         
         server.handleEvents();                       
     }
+    
+    #ifdef _WIN32
+    WSACleanup();
+    #endif
     
     return 0;
 }
