@@ -24,7 +24,7 @@ To build on Windows, see [Builds/Windows/README.md](Builds/Windows/README.md) fo
 
 Prerequisites:
 - CMake 3.16+
-- GCC/MinGW or Clang
+- Visual Studio with the Desktop development with C++ workload
 
 Build commands:
 ```cmd
@@ -38,7 +38,7 @@ cd Builds\Windows
 build.bat
 ```
 
-The resulting binary will be in `Builds\Windows\build\bin\aooserver.exe`
+The resulting binary will be in `build\bin\Release\aooserver.exe`
 
 # USAGE
 

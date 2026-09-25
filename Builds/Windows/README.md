@@ -8,13 +8,9 @@ Before building on Windows, you need to install:
    - Download from: https://cmake.org/download/
    - Or install via package manager: `choco install cmake` (Chocolatey)
 
-2. **GCC/Clang/MinGW**
-   - Option A: Install MinGW-w64
-     - Download from: https://www.mingw-w64.org/
-     - Or: `choco install mingw` (Chocolatey)
-   - Option B: Install LLVM/Clang
-     - Download from: https://releases.llvm.org/download.html
-   - Option C: Use Visual Studio with C++ tools
+2. **Visual Studio with C++ tools**
+   - Install Visual Studio 2022 or newer
+   - Select the **Desktop development with C++** workload
 
 ## Building
 
@@ -40,18 +36,19 @@ build.bat
 ### Method 3: Manual CMake Build
 
 ```cmd
-cd .\Builds\Windows
-mkdir build
-cd build
-cmake -G "Unix Makefiles" ../.. -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release
+cmake -S . -B build -G "Visual Studio 18 2026" -A x64
+cmake --build build --config Release --parallel
 ```
+
+Replace the generator name with the newest Visual Studio generator listed by
+`cmake --help` when using a different Visual Studio release. The provided build
+scripts detect this automatically.
 
 ## Output
 
 After a successful build, the executable will be located at:
 ```
-Builds/Windows/build/bin/aooserver.exe
+build/bin/Release/aooserver.exe
 ```
 
 ## Running
@@ -75,20 +72,16 @@ aooserver.exe -h                 # Show help
 - Ensure CMake is installed and added to PATH
 - Restart your terminal after installing CMake
 
-### "gcc not found" or compiler errors
-- Ensure MinGW or other C++ compiler is installed and added to PATH
-- Try: `where gcc` to verify compiler is in PATH
+### No Visual Studio generator found
+- Install Visual Studio with the Desktop development with C++ workload
+- Run `cmake --help` and confirm that a Visual Studio generator is listed
 
 ### Build fails with linker errors
 - Ensure all dependencies are properly installed
-- Try cleaning build: `rm -r build` then rebuild
+- Delete the repository-root `build` directory, then rebuild
 
 ## Notes
 
 - The first build may take a while as it compiles all dependencies
 - Subsequent builds will be faster due to caching
-- For Visual Studio users, you can also generate Visual Studio project files:
-  ```cmd
-  cmake -G "Visual Studio 17 2022" ../.. -DCMAKE_BUILD_TYPE=Release
-  cmake --build . --config Release
-  ```
+- Windows builds intentionally require MSVC and generate Visual Studio project files.

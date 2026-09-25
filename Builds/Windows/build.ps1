@@ -1,49 +1,44 @@
 # AOOServer Windows Build Script
-# Requires: CMake and GCC/Clang (MinGW or similar)
+# Requires: CMake and Visual Studio with the Desktop development with C++ workload
 
 param(
+    [ValidateSet("Debug", "Release", "RelWithDebInfo", "MinSizeRel")]
     [string]$BuildType = "Release"
 )
 
-Write-Host "Building aooserver for Windows..."
-Write-Host ""
+$ErrorActionPreference = "Stop"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$buildDir = Join-Path $repoRoot "build"
 
-# Check if cmake is available
 if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
     Write-Host "ERROR: CMake not found. Please install CMake." -ForegroundColor Red
     exit 1
 }
 
-# Create build directory
-if (-not (Test-Path "build")) {
-    New-Item -ItemType Directory -Name "build" | Out-Null
+$generator = cmake --help |
+    Select-String '^\s*\*?\s*Visual Studio [0-9]+ [0-9]{4}' |
+    ForEach-Object { [regex]::Match($_.Line, 'Visual Studio [0-9]+ [0-9]{4}').Value } |
+    Select-Object -First 1
+
+if (-not $generator) {
+    Write-Host "ERROR: No Visual Studio C++ generator was found." -ForegroundColor Red
+    exit 1
 }
 
-# Navigate to build directory
-Push-Location build
-
-try {
-    # Run CMake
-    Write-Host "Running CMake configuration..." -ForegroundColor Cyan
-    cmake -G "Unix Makefiles" ../.. -DCMAKE_BUILD_TYPE=$BuildType
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "CMake configuration failed!" -ForegroundColor Red
-        exit 1
-    }
-
-    # Build the project
-    Write-Host ""
-    Write-Host "Building project..." -ForegroundColor Cyan
-    cmake --build . --config $BuildType
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Build failed!" -ForegroundColor Red
-        exit 1
-    }
-
-    Write-Host ""
-    Write-Host "Build completed successfully!" -ForegroundColor Green
-    Write-Host "Executable location: $(Get-Location)\bin\aooserver.exe" -ForegroundColor Green
+Write-Host "Configuring aooserver with $generator (x64)..." -ForegroundColor Cyan
+& cmake -S $repoRoot -B $buildDir -G $generator -A x64
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "CMake configuration failed!" -ForegroundColor Red
+    exit $LASTEXITCODE
 }
-finally {
-    Pop-Location
+
+Write-Host "Building $BuildType..." -ForegroundColor Cyan
+& cmake --build $buildDir --config $BuildType --parallel
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Build failed!" -ForegroundColor Red
+    exit $LASTEXITCODE
 }
+
+$executable = Join-Path $buildDir "bin\$BuildType\aooserver.exe"
+Write-Host "Build completed successfully!" -ForegroundColor Green
+Write-Host "Executable location: $executable" -ForegroundColor Green

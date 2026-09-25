@@ -1,6 +1,8 @@
 # Build directories
 build/
 Builds/
+build_win/
+build_msvc/
 
 # CMake
 CMakeCache.txt
@@ -48,3 +50,7 @@ DerivedData/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Local agent state
+.specs/
+.deep-think/

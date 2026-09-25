@@ -4,6 +4,10 @@ project(aooserver)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(WIN32 AND NOT MSVC)
+    message(FATAL_ERROR "Windows builds require the MSVC toolchain")
+endif()
+
 # Determine platform-specific flags
 if(WIN32)
     add_definitions(-D_WIN32_WINNT=0x0601)
@@ -120,7 +124,7 @@ target_compile_definitions(aooserver PRIVATE
 )
 
 if(WIN32)
-    target_compile_definitions(aooserver PRIVATE WINDOWS=1)
+    target_compile_definitions(aooserver PRIVATE WINDOWS=1 _CONSOLE)
 elseif(UNIX AND NOT APPLE)
     target_compile_definitions(aooserver PRIVATE LINUX=1)
 elseif(APPLE)

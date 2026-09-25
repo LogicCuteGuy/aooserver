@@ -7,6 +7,7 @@
 #include "aoo_net.h"
 
 #include <memory>
+#include <string>
 
 namespace aoo {
 namespace net {
