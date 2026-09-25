@@ -166,7 +166,15 @@ elseif(APPLE)
         "-framework Security"
     )
 else()
-    target_link_libraries(aooserver PRIVATE pthread)
+    set(CURL_USE_STATIC_LIBS OFF)
+    find_package(CURL REQUIRED)
+    find_package(Threads REQUIRED)
+    target_link_libraries(aooserver PRIVATE
+        CURL::libcurl
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+        rt
+    )
 endif()
 
 # Output directory

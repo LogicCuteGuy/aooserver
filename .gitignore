@@ -3,6 +3,7 @@ build/
 Builds/
 build_win/
 build_msvc/
+dist/
 
 # CMake
 CMakeCache.txt
@@ -23,6 +24,8 @@ _deps/
 *.dll
 *.a
 *.lib
+*.zip
+*.tar.gz
 
 # IDE files
 .vscode/
